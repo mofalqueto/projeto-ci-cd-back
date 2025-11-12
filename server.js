@@ -1,12 +1,11 @@
 const express = require("express");
 const cors = require("cors");
 
-// Cria o app Express
 const app = express();
 
-// 🟢 Libera o acesso apenas para o front hospedado na Vercel
+// Configura o CORS para permitir requisições do front-end específico
 app.use(cors({
-  origin: "https://projeto-ci-cd-front-gatos.vercel.app/" // 🔹 coloque aqui o link exato do seu front quando ele estiver publicado
+  origin: "https://projeto-ci-cd-front-gatos.vercel.app" 
 }));
 
 // Rota principal da API
