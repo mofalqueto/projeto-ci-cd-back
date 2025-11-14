@@ -10,7 +10,7 @@ app.use(cors({
 // Rota principal da API
 app.get("/", (req, res) => {
   res.json({
-    mensagem: "🐱💬 A Gatossaura Net API está online e pronta pra ronronar com CI/CD!🐱🐱🐱🐱🐱🐱🐱"
+    mensagem: " Ruf Ruf Ruf.🐶🐶🐶🐶🐶🐶🐶 Um doginho invadiu a API..."
   });
 });
 
