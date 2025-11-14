@@ -2,88 +2,78 @@
 
 Backend do projeto **API Gatossaura**, desenvolvido para a disciplina de
 **Integração Contínua e Entrega Contínua (CI/CD)**.\
-Este servidor utiliza **Node.js + Express**, com deploy hospedado na
-**Render**, e pipeline CI/CD configurado via **GitHub Actions + Render
-Deploy Hook**.
+Este servidor utiliza **Node.js + Express**, com deploy automatizado via
+**GitHub Actions** integrando diretamente com a **API da Render**
+(usando `RENDER_API_KEY` e `SERVICE_ID`).
 
 ------------------------------------------------------------------------
 
-##  Tecnologias Utilizadas
+## 🚀 Tecnologias Utilizadas
 
 -   **Node.js**
 -   **Express.js**
--   **Nodemon** (ambiente local)
+-   **Nodemon**
 -   **Git / GitHub**
--   **GitHub Actions** (CI/CD)
--   **Render** (deploy da API)
--   **Deploy Hook** (integração automática do repositório → Render)
+-   **GitHub Actions**
+-   **Render (API Deploy)**
 
 ------------------------------------------------------------------------
 
-##  Estrutura do Projeto
+## 🧩 Estrutura do Projeto
 
-     backend/
-     ├── server.js               # Servidor principal com Express
-     ├── package.json            # Dependências e scripts
-     ├── .gitignore              # Arquivos ignorados pelo Git
-     ├── .github/workflows/      # Pipelines CI/CD
-     │    └── deploy.yml         # Arquivo de automação CI/CD
-     └── README.md               # Documentação do backend
+    📂 backend/
+     ├── server.js
+     ├── package.json
+     ├── .gitignore
+     ├── .github/workflows/
+     │     └── deploy.yml
+     └── README.md
 
 ------------------------------------------------------------------------
 
-#  Fluxo CI/CD --- Como Funciona
+# 🔄 Fluxo CI/CD --- Como Funciona
 
-O projeto utiliza **CI/CD automatizado** para garantir um fluxo
-profissional:
+O pipeline do projeto funciona assim:
 
-##  1. Desenvolve localmente
+## ✔️ 1. Alterações no código
 
-Você altera o código no seu VS Code → testa usando:
+Você desenvolve localmente e testa:
 
 ``` bash
 npm run dev
 ```
 
-##  2. Commit + Push para a branch `main`
-
-Cada alteração que você envia dispara o CI/CD:
+## ✔️ 2. Commit e push para a branch `main`
 
 ``` bash
 git add .
-git commit -m "feat(api): adiciona novo endpoint"
+git commit -m "feat(api): nova funcionalidade"
 git push origin main
 ```
 
-##  3. GitHub Actions roda o workflow
+## ✔️ 3. GitHub Actions inicia o workflow automaticamente
 
-Arquivo: `.github/workflows/deploy.yml`
+O arquivo `deploy.yml`:
 
-O workflow faz:
-
-1.  Faz checkout do código\
+1.  Faz checkout do repositório\
 2.  Instala Node\
 3.  Instala dependências\
-4.  Executa testes (caso existam)\
-5.  Chama o **Deploy Hook da Render**\
-    → isso dispara o deploy automaticamente
+4.  Valida o projeto\
+5.  Acessa a API da **Render** usando sua `RENDER_API_KEY`\
+6.  Solicita um deploy para o serviço usando o `SERVICE_ID`
 
-##  4. Render recebe o Deploy Hook
+## ✔️ 4. A Render recebe o comando da API
 
-Render vai:
+-   Baixa o repositório
+-   Instala dependências
+-   Gera build
+-   Sobe nova versão automaticamente
 
--   Baixar o código atualizado
--   Instalar dependências
--   Buildar o container
--   Subir nova versão da API
-
-##  5. API atualizada está no ar!
-
-Seu front já pode consumir a nova versão 
+## ✔️ 5. A API é atualizada em produção 🎉
 
 ------------------------------------------------------------------------
 
-#  Arquivo do CI/CD (deploy.yml)
+# 🛠️ Arquivo do CI/CD (deploy.yml)
 
 ``` yml
 name: Deploy Backend to Render
@@ -109,66 +99,37 @@ jobs:
       - name: Instalar dependências
         run: npm install
 
-      - name: Trigger Deploy Hook na Render
+      - name: Disparar deploy via API da Render
         run: |
-          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
+          curl -X POST             -H "Accept: application/json"             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"             -H "Content-Type: application/json"             -d '{"serviceId": "${{ secrets.SERVICE_ID }}"}'             https://api.render.com/v1/services/${{ secrets.SERVICE_ID }}/deploys
 ```
 
-### Secrets necessários no GitHub:
+------------------------------------------------------------------------
 
-  Nome                     Descrição
-  ------------------------ ---------------------------------------------
-  **RENDER_DEPLOY_HOOK**   URL gerada pela Render para disparar deploy
+# 🔐 Secrets necessários no GitHub
+
+  Nome                 Descrição
+  -------------------- -----------------------------------
+  **RENDER_API_KEY**   Chave da API da Render
+  **SERVICE_ID**       ID do serviço hospedado na Render
+
+Para configurar:
+
+1.  Vá em **GitHub → Settings → Secrets → Actions**
+2.  Adicione:
+    -   `RENDER_API_KEY`
+    -   `SERVICE_ID`
 
 ------------------------------------------------------------------------
 
-# 🔌 Como Obter o Deploy Hook no Render
+# ⚙️ Executando Localmente
 
-1.  Acesse o seu serviço no Render\
-
-2.  Vá em **Settings**\
-
-3.  Role até a seção **Deploy Hooks**\
-
-4.  Copie a URL\
-
-5.  No GitHub \> Settings \> Secrets \> Actions → crie:
-
-        RENDER_DEPLOY_HOOK = https://api.render.com/deploy/... 
-
-------------------------------------------------------------------------
-
-# ⚙️ Como Executar Localmente
-
-1.  Clone este repositório:
-
-    ``` bash
-    git clone https://github.com/seu-usuario/projeto-ci-cd-back.git
-    ```
-
-2.  Entre na pasta:
-
-    ``` bash
-    cd projeto-ci-cd-back
-    ```
-
-3.  Instale:
-
-    ``` bash
-    npm install
-    ```
-
-4.  Inicie:
-
-    ``` bash
-    npm start
-    ```
-
-    Ou em dev:
-
-    ``` bash
-    npm run dev
-    ```
+``` bash
+git clone https://github.com/seu-usuario/projeto-ci-cd-back.git
+cd projeto-ci-cd-back
+npm install
+npm run dev
+```
 
 API disponível em:
 
@@ -176,37 +137,34 @@ API disponível em:
 
 ------------------------------------------------------------------------
 
-#  Deploy em Produção
+# 🌐 Deploy em Produção
 
--   **Render:** https://projeto-ci-cd-back-6w47.onrender.com\
--   CI/CD via **GitHub Actions + Deploy Hook**
-
-------------------------------------------------------------------------
-
-#  Endpoints
-
-  Método                Rota         Descrição
-  --------------------- ------------ -------------------------------
-  **GET**               `/`          Retorna mensagem padrão
-  **GET**               `/status`    Verifica funcionamento
-  **GET/POST/DELETE**   *Em breve*   Novas rotas da API Gatossaura
+-   Render: https://projeto-ci-cd-back-6w47.onrender.com\
+-   Deploy automático via GitHub Actions + Render API
 
 ------------------------------------------------------------------------
 
-#  Aprendizados
+# 🔄 Endpoints
+
+  Método   Rota                 Descrição
+  -------- -------------------- ------------------------
+  GET      `/`                  Mensagem padrão
+  GET      `/status`            Verifica funcionamento
+  Outros   Em desenvolvimento   
+
+------------------------------------------------------------------------
+
+# 🧠 Aprendizados
 
 -   Criação de API com Express\
--   Ambiente local com Nodemon\
--   Hospedagem na Render\
--   CI/CD automatizado com GitHub Actions\
--   Deploy via Deploy Hook\
--   Boas práticas de versionamento semântico
+-   Automação CI/CD com GitHub Actions\
+-   Deploy profissional via API da Render\
+-   Boas práticas de versionamento
 
 ------------------------------------------------------------------------
 
 # 🐾 Autora
 
 **Monica Falqueto**\
- GitHub: https://github.com/mofalqueto\
- FATEC Franca --- DSM4\
- Projeto desenvolvido para fins acadêmicos (CI/CD)
+GitHub: https://github.com/mofalqueto\
+FATEC Franca --- DSM4
